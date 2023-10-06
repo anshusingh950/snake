@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            /* overflow: hidden; */
+
+        }
+
+        .container {
+
+            align-items: center;
+            background-image: url(bg.jpg);
+            background-size: cover;
+            background-repeat: no-repeat;
+            height: 94vh;
+            width: 94vw;
+            border: 3vh groove orange;
+
+        }
+
+        .box1 {
+            display: grid;
+            height: 60vh;
+            width: 60vw;
+            grid-template-rows: repeat(20, 1fr);
+            grid-template-columns: repeat(30, 1fr);
+            border: 2px solid red;
+            margin-left: 17vw;
+            /* margin: auto; */
+            /* display: inline-block; */
+        }
+
+        .snake {
+            background-color: rgb(0, 255, 42);
+            border: 2px solid rgb(0, 0, 0);
+            /* box-shadow: ; */
+        }
+        .snhead{
+            background-color: rgb(255, 0, 221);
+            box-shadow: 1vh 0 2vh 0vh rgb(143, 0, 209),-1vh 0 2vh 0vh rgb(160, 0, 209),0 1vh 2vh 0vh rgb(185, 0, 209),0 -1vh 2vh 0vh rgb(185, 0, 209);
+
+        }
+
+
+        .food {
+            background-color: rgb(67, 45, 45);
+            box-shadow: 3px 0 3px 0 rgb(0, 255, 119),-3px 0 3px 0 rgb(0, 255, 47), 0 -3px 3px 0 rgb(15, 185, 41),0 3px 3px 0 rgb(24, 230, 144);
+        }
+
+        #scorebox {
+            position: absolute;
+            right: 5vw;
+            height: 3vh;
+            width: 10vw;
+            font-size:2vh;
+
+            top: 5vh;
+            border: 1vh solid chartreuse;
+            background-color: rgb(255, 255, 255);
+
+
+        }
+
+        #highbox {
+            position: absolute;
+            height: 7vh;
+            width: 15vw;
+            top: 5vh;
+            left: 1vw;
+            font-size: 2.5vh;
+            border: 1vh solid rgb(13, 10, 189);
+            background-color: rgb(60, 255, 0);
+
+        }
+
+        .buttn {
+            position: absolute;
+            height: 10vh;
+            width: 10vh;
+            font-size: 6vh;
+
+
+        }
+
+        #top1 {
+            left: 45vw;
+            bottom: 24vh;
+        }
+
+        #down1 {
+            left: 45vw;
+            bottom: 6vh;
+        }
+
+        #left1 {
+            left: 30vw;
+            bottom: 15vh;
+        }
+
+        #right1 {
+            left: 60vw;
+            bottom: 15vh;
+        }
+
+        #pause1 {
+            left: 45vw;
+            bottom: 15vh;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="box1" id="board"></div>
+        <div id="scorebox"></div>
+        <div id="highbox"></div>
+        <div>
+            <button id="down1" type="button" class="buttn">DN</button>
+        </div>
+        <div>
+            <button id="top1" type="button" class="buttn">TP</button>
+        </div>
+
+        <div>
+            <button id="left1" type="button" class="buttn">LT</button>
+        </div>
+        <div>
+            <button id="right1" type="button" class="buttn">RT</button>
+        </div>
+        <div>
+            <button id="pause1" type="button" class="buttn">PS</button>
+        </div>
+
+    </div>
+
+</body>
+<script>
+    let directinp = { x: 0, y: 0 }
+    let speed = .1;
+    let lastPaintTime = 0;
+
+    hghobj = localStorage.getItem('highscore')
+    let hiscore = JSON.parse(hghobj)
+    let snar = [
+        { x: 7, y: 15 }
+    ]
+    let score = 0;
+    // let hiscore=0;
+    fod = { x: 10, y: 10 };
+    function main(ctime) {
+        window.requestAnimationFrame(main);
+
+        if ((ctime - lastPaintTime) / 1000 < speed) {
+
+            return;
+        }
+        lastPaintTime = ctime;
+        gameengine();
+    }
+    function iscollide(snake) {
+        for (var i = 1; i < snar.length; i++) {
+            if (snake[0].x == snake[i].x && snake[0].y == snake[i].y) {
+                var audio = new Audio('gameover.mp3');
+            audio.play();
+                return true;
+            }
+        }
+
+        if (snake[0].x > 30 || snake[0].x < 0 || snake[0].y > 20 || snake[0].y < 0) {
+            var audio = new Audio('gameover.mp3');
+            audio.play();
+            return true;
+        }
+        return false;
+    }
+    function gameengine() {
+
+        if (iscollide(snar)) {
+            
+            alert('game over,press enter to continue')
+            score = 0;
+
+            directinp = { x: 0, y: 0 }
+            snar = [{ x: 7, y: 10 }]
+        }
+        if (score > hiscore) {
+            hiscore = score;
+            hiobj = JSON.stringify(hiscore)
+            localStorage.setItem("highscore", hiobj)
+
+        }
+        // localStorage.clear()
+
+
+        scorebox.innerText = `SCORE:${score}`
+        highbox.innerText = `HIGH SCORE:${hiscore}`
+
+
+
+
+
+
+        if (snar[0].y === fod.y && snar[0].x === fod.x) {
+            snar.unshift({ x: snar[0].x + directinp.x, y: snar[0].y + directinp.y });
+            score += 1;
+            var audio = new Audio('food.mp3');
+            audio.play();
+
+            fod = { x: Math.round(1 + 29 * Math.random()), y: Math.round(1 + 19 * Math.random()) }
+        }
+
+
+
+
+        for (let k = snar.length - 2; k >= 0; k--) {
+            snar[k + 1] = { ...snar[k] };
+
+        }
+        snar[0].x += directinp.x
+        snar[0].y += directinp.y       
+
+        board.innerHTML = ""
+        snar.forEach((e,index) => {
+            snkelem = document.createElement('div')
+            snkelem.style.gridRowStart = e.y;
+            snkelem.style.gridColumnStart = e.x;
+            if (index==0) {
+            snkelem.classList.add('snhead');}
+            else{
+                snkelem.classList.add('snake')
+
+            }
+            board.appendChild(snkelem)
+
+        })
+        fodelem = document.createElement('div')
+        fodelem.classList.add('food')
+        fodelem.style.gridRowStart = fod.y
+        fodelem.style.gridColumnStart = fod.x
+        board.appendChild(fodelem)
+    }
+
+
+    window.requestAnimationFrame(main)
+    // directinp={x:0,y:0}
+
+    window.addEventListener('keydown', e => {
+        directinp = { x: 0, y: 0 };
+        switch (e.key) {
+
+            case ("ArrowDown"):
+                directinp.y = 1
+                directinp.x = 0
+                speed = .1;
+                var audio = new Audio('move.mp3');
+            audio.play();
+
+
+                break;
+            case ("ArrowUp"):
+                directinp.y = -1
+                directinp.x = 0;
+                speed = .1;
+                var audio = new Audio('move.mp3');
+            audio.play();
+
+
+                break;
+            case ("ArrowLeft"):
+                directinp.x = -1
+                directinp.y = 0
+                speed = .1;
+                var audio = new Audio('move.mp3');
+            audio.play();
+
+
+                break;
+            case ("Enter"):
+                directinp.x = 0
+
+                directinp.y = 0
+                speed = 100000000;
+                var audio = new Audio('move.mp3');
+            audio.play();
+
+
+                break;
+            case ("ArrowRight"):
+                directinp.x = 1
+
+                directinp.y = 0
+                speed = .1;
+                var audio = new Audio('move.mp3');
+            audio.play();
+
+
+                break;
+
+            default:
+                break;
+        }
+    })
+    down1.addEventListener('click', func1 = () => {
+        directinp.x = 0
+        directinp.y = 1
+        speed = .1;
+
+
+    })
+    top1.addEventListener('click', func2 = () => {
+        directinp.x = 0
+        directinp.y = -1
+        speed = .1;
+
+    })
+
+    left1.addEventListener('click', func3 = () => {
+        directinp.x = -1
+        directinp.y = 0
+        speed = .1;
+
+    })
+    right1.addEventListener('click', func4 = () => {
+        directinp.x = 1
+        directinp.y = 0
+        speed = .1;
+
+    })
+    pause1.addEventListener('click', func5 = () => {
+        directinp = { x: 0, y: 0 };
+        speed = 10000000;
+    })
+</script>
+
+
+</html>
